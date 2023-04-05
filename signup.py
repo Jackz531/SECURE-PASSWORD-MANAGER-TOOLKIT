@@ -119,5 +119,8 @@ def signup():
 
     b1=Button(master1,text="Sign Up",font=myFont,padx=30,bg=c3,command=partial(check_email,e1,e2,e3,master1))
     b1.place(relx=0.5,rely=0.8,anchor=CENTER)
-
+    
+    b2=Button(master1,text="Go Back",font=myFont,padx=30,bg=c3,command=master1.destroy)
+    b2.place(relx=0.5,rely=0.90,anchor=CENTER)
+    
     master1.mainloop()
