@@ -1,5 +1,7 @@
 import mysql.connector
 import hashlib
+import socket
+import struct
 
 def insert(email,pwd):
 
@@ -67,8 +69,21 @@ def find_email(email):
         return False
     
 
-def validate(email,pwd):
+def validate(sock, email,pwd):
     if email=="" or pwd=="":
         return "Enter credentials properly"
     else:
-        return checksql(email,pwd)
+        sock.send(email.encode())
+        typen = sock.recv(1024).decode()
+        if typen == 'int':
+            n = struct.unpack('i',sock.recv(struct.calcsize('i')))[0]
+        else:
+            return sock.recv(1024).decode()
+        for i in range(1,n):
+            print(pwd)
+            pwd = hashlib.sha512(pwd.encode()).hexdigest()
+        print(pwd)
+        sock.send(pwd.encode())
+        login_status = sock.recv(1024).decode()
+        return login_status
+

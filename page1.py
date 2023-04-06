@@ -1,7 +1,10 @@
+import struct
 from tkinter import *
 import tkinter.font as font
 import sample
 import signup
+import socket
+
 
 #c='#ABFFA4' green
 #c='#FFB675' cream
@@ -10,25 +13,34 @@ c='#A6A9AD'
 c2='#DBDBDB' 
 c3='#DBDBDB' 
 
+def home(sock):
 
-def removemessage(label):
-    label.destroy()
+    def removemessage(label):
+        label.destroy()
 
-def printmessage(x,color):
-    inv=Label(master, text=x,font=myFont,bg=c,foreground=color)
-    inv.place(relx=0.5,rely=0.6,anchor=CENTER)
-    master.after(2000, removemessage, inv)
+    def printmessage(x, color):
+        inv = Label(master, text=x, font=myFont, bg=c, foreground=color)
+        inv.place(relx=0.5, rely=0.6, anchor=CENTER)
+        master.after(2000, removemessage, inv)
 
-def takedetails():
-    email=e1.get()
-    pwd=e2.get()
-    x=sample.validate(email,pwd)
-    printmessage(x,'red')
+    def takedetails(sock):
+        sock.send("login".encode())
+        email = e1.get()
+        pwd = e2.get()
+        # return ["login",email,pwd]
+        x = sample.validate(sock,email, pwd)
+        printmessage(x, 'red')
+        if x == "Login Successful":
+            n = struct.unpack('i',sock.recv(struct.calcsize('i')))[0]
+            if n == 1:
+                print("Time to change password")
+        return "login"
 
-def go():
-    signup.signup()
 
-if __name__== '__main__':
+    def go(sock):
+        sock.send("signup".encode())
+        signup.signup(sock)
+
     master = Tk()
 
     master.geometry("600x450")
@@ -52,10 +64,10 @@ if __name__== '__main__':
     e2=Entry(master,width=40,font=myFont2,show='*',bg=c3,fg='black')
     e2.place(relx=0.5,rely=0.5,anchor=CENTER)
 
-    b1=Button(master,text="Login",font=myFont,padx=30,bg=c2,command=takedetails,fg='black')
+    b1=Button(master, text="Login", font=myFont, padx=30, bg=c2, command=lambda: takedetails(sock), fg='black')
     b1.place(relx=0.5,rely=0.72,anchor=CENTER)
 
-    b1=Button(master,text="Sign Up",font=myFont,padx=30,bg=c2,command=go,fg='black')
+    b1=Button(master,text="Sign Up",font=myFont,padx=30,bg=c2,command=lambda: go(sock),fg='black')
     b1.place(relx=0.5,rely=0.85,anchor=CENTER)
 
     master.mainloop()

@@ -1,16 +1,24 @@
+import hashlib
 from tkinter import *
 import tkinter.font as font
 import re
 import sample
 from functools import partial
+import socket
+import struct
+import hashlib
 
 c='#A6A9AD'#green
 c2='#00008B' #darkblue
 c3='#DBDBDB'#grey
 
-def enter_details(email,pwd):
+def enter_details(email,pwd,sock):
     print(email,pwd)
-    sample.insert(email,pwd)
+    sock.send(email.encode())
+    for i in range(3):
+        pwd = hashlib.sha512(pwd.encode()).hexdigest()
+    sock.send(pwd.encode())
+    # sample.insert(email,pwd)
 
 def removemessage(label):
     label.destroy()
@@ -29,27 +37,33 @@ def check(x):
         return False
      
 #primary funcion for checking email id
-def check_email(e1,e2,e3,master1):
+def check_email(e1,e2,e3,master1,sock):
+    sock.send("signup".encode())
     email=e1.get()
     x=check(email)
-    z=sample.find_email(email)
+    sock.send(email.encode())
+    z=struct.unpack('?',sock.recv(1))[0]
     if x==True and z==True:  
          y=check_password_strength(e2,e3)
          if(y!=None):
             printmessage(y,'red',master1)
+            sock.send(y.encode())
             # e1.delete(0,END)
             e2.delete(0,END)
             e3.delete(0,END)
          else: 
-          z="Signup successfull"
+          z="Signup successful"
+          sock.send(z.encode())
           printmessage(z,'red',master1)  
-          enter_details(email,e2.get())
+          enter_details(email,e2.get(),sock)
     elif(z==False):
           y="You already have an account"
+          sock.send(y.encode())
           printmessage(y,'red',master1)
           return
     else:
         y="Enter a valid email-id"
+        sock.send(y.encode())
         printmessage(y,'red',master1)
    
 def check_password_strength(e2,e3):
@@ -85,8 +99,12 @@ def check_password_strength(e2,e3):
     else:
         return "Weak password."
 
+def destroy(sock,master1):
+    sock.send("Go Back".encode())
+    master1.destroy()
 
-def signup():
+
+def signup(sock):
     master1 = Toplevel()
 
     master1.geometry("600x450")
@@ -117,10 +135,10 @@ def signup():
     e3=Entry(master1,width=40,font=myFont2,show='*',bg=c3,fg="black")
     e3.place(relx=0.5,rely=0.65,anchor=CENTER)
 
-    b1=Button(master1,text="Sign Up",font=myFont,padx=30,bg=c3,command=partial(check_email,e1,e2,e3,master1))
+    b1=Button(master1,text="Sign Up",font=myFont,padx=30,bg=c3,command=partial(check_email,e1,e2,e3,master1,sock))
     b1.place(relx=0.5,rely=0.8,anchor=CENTER)
     
-    b2=Button(master1,text="Go Back",font=myFont,padx=30,bg=c3,command=master1.destroy)
+    b2=Button(master1,text="Go Back",font=myFont,padx=30,bg=c3,command=lambda: destroy(sock,master1))
     b2.place(relx=0.5,rely=0.90,anchor=CENTER)
     
     master1.mainloop()
