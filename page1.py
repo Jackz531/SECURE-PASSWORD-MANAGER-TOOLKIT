@@ -34,7 +34,6 @@ def home(sock):
             n = struct.unpack('i',sock.recv(struct.calcsize('i')))[0]
             if n == 1:
                 print("Time to change password")
-        return "login"
 
 
     def go(sock):
