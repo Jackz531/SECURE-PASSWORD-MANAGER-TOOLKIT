@@ -127,6 +127,7 @@ while True:
         signupbuttonclicked = conn.recv(1024).decode()
         if signupbuttonclicked == "signup":
             email = conn.recv(1024).decode()
+            print(email)
             conn.send(struct.pack('?',find_email(email)))
             validity = conn.recv(1024).decode()
             print(validity)
@@ -134,6 +135,8 @@ while True:
                 email = conn.recv(1024).decode()
                 pwd = conn.recv(1024).decode()
                 insert(email,pwd)
+            else:
+                break
         if signupbuttonclicked == "Go Back":
             break
 

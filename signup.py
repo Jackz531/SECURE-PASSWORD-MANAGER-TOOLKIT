@@ -41,26 +41,27 @@ def check_email(e1,e2,e3,master1,sock):
     sock.send("signup".encode())
     email=e1.get()
     x=check(email)
-    sock.send(email.encode())
-    z=struct.unpack('?',sock.recv(1))[0]
-    if x==True and z==True:  
-         y=check_password_strength(e2,e3)
-         if(y!=None):
-            printmessage(y,'red',master1)
-            sock.send(y.encode())
-            # e1.delete(0,END)
-            e2.delete(0,END)
-            e3.delete(0,END)
-         else: 
-          z="Signup successful"
-          sock.send(z.encode())
-          printmessage(z,'red',master1)  
-          enter_details(email,e2.get(),sock)
-    elif(z==False):
-          y="You already have an account"
-          sock.send(y.encode())
-          printmessage(y,'red',master1)
-          return
+    if x:
+        sock.send(email.encode())
+        z=struct.unpack('?',sock.recv(1))[0]
+        if z:
+             y=check_password_strength(e2,e3)
+             if(y!=None):
+                printmessage(y,'red',master1)
+                sock.send(y.encode())
+                # e1.delete(0,END)
+                e2.delete(0,END)
+                e3.delete(0,END)
+             else:
+              z="Signup successful"
+              sock.send(z.encode())
+              printmessage(z,'red',master1)
+              enter_details(email,e2.get(),sock)
+        else:
+              y="You already have an account"
+              sock.send(y.encode())
+              printmessage(y,'red',master1)
+              return
     else:
         y="Enter a valid email-id"
         sock.send(y.encode())
