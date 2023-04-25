@@ -101,7 +101,7 @@ while True:
     # conn.send("True".encode())
     homebuttonclicked = ""
     homebuttonclicked = conn.recv(1024).decode()
-    print(homebuttonclicked)
+    # print(homebuttonclicked)
     while homebuttonclicked == "login":
         email = conn.recv(1024).decode()
         n = retrieve_n(email)
