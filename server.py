@@ -121,6 +121,8 @@ while True:
             break
             while True:
                 pass
+        else:
+            break
     while homebuttonclicked == "signup":
         signupbuttonclicked = ""
         print(signupbuttonclicked)
