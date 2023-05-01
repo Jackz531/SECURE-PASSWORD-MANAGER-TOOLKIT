@@ -78,7 +78,8 @@ def validate(sock, email,pwd):
         if typen == 'int':
             n = struct.unpack('i',sock.recv(struct.calcsize('i')))[0]
         else:
-            return sock.recv(1024).decode()
+            n = sock.recv(1024).decode()
+            return n
         for i in range(1,n):
             print(pwd)
             pwd = hashlib.sha512(pwd.encode()).hexdigest()

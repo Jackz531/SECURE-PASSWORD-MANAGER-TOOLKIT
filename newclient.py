@@ -12,9 +12,7 @@ client_socket.connect(('localhost', 5000))  # connect to the server
 #
 # if message == "False":
 #     print("Server connection not established")
-
-while True:
-    homepage = page1.home(client_socket)
+homepage = page1.home(client_socket)
     # while homepage == "login":
     #     pass
     # while homepage == "signup":

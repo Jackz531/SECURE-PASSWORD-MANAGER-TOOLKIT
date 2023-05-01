@@ -3,6 +3,8 @@ from tkinter import *
 import tkinter.font as font
 import sample
 import signup
+import changemaster
+import retrieve_generate
 import socket
 
 
@@ -33,7 +35,9 @@ def home(sock):
         if x == "Login Successful":
             n = struct.unpack('i',sock.recv(struct.calcsize('i')))[0]
             if n == 1:
-                print("Time to change password")
+                changemaster.resignup(sock,pwd)
+            else:
+                retrieve_generate.retrieve_generate(sock,pwd)
 
 
     def go(sock):

@@ -1,78 +1,103 @@
+import struct
+
 import mysql.connector
 import sample
 import tkinter.font as font
 from tkinter import *
 from tkinter import ttk
+import encryption
+import decryption
 
-dname = ""
-user_id = ""
+def home(sock,masterpass):
+    dname = ""
+    user_id = ""
 
-c = '#A6A9AD'  # green
-c2 = '#00008B'  # darkblue
-c3 = '#DBDBDB'  # grey
-# create connection to MySQL database
-mydb = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="",
-    database="spmt")
+    c = '#A6A9AD'  # green
+    c2 = '#00008B'  # darkblue
+    c3 = '#DBDBDB'  # grey
+    # create connection to MySQL database
+    # mydb = mysql.connector.connect(
+    #     host="localhost",
+    #     user="root",
+    #     password="DBMS_project9",
+    #     database="spmt")
 
-# create cursor to execute SQL queries
-mycursor = mydb.cursor()
-# retrieve domain names from database
-mycursor.execute("SELECT DISTINCT domain FROM passwords")
-domain_names = mycursor.fetchall()
-domain_names = [x[0] for x in domain_names]
-
-
-def printmessage(x,color):
-    print(x)
-    inv=Label(root,text=x,font=font.Font(size=15),bg=c,fg=color)
-    inv.place(relx=0.5,rely=0.9,anchor=CENTER)
-
-
-def getpassword():
-    conn = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="",
-        database="spmt")
-    
-    cursor = conn.cursor()
-    q = "SELECT * FROM passwords WHERE domain= %s AND user_id = %s"
-    values = (dname,user_id)
-    cursor.execute(q,values)
-    rows = cursor.fetchall()
-    printmessage(rows[0][3],'red')
+    # create cursor to execute SQL queries
+    # mycursor = mydb.cursor()
+    # # retrieve domain names from database
+    # mycursor.execute("SELECT DISTINCT domain FROM passwords")
+    # domain_names = mycursor.fetchall()
+    # domain_names = [x[0] for x in domain_names]
+    # domain_names = list()
+    # n = struct.unpack('i',sock.recv(struct.calcsize('i')))[0]
+    # sock.send("x".encode())
+    # for i in range(n):
+    #     val = sock.recv(1024).decode()
+    #     domain_names.append(val)
+    #     sock.send("x".encode())
+    # domain_name_dropdown.config(values=domain_names)
 
 
-# define function to retrieve user ids based on selected domain name
-
-def get_domains(email):
-    mycursor.execute(
-        "SELECT domain FROM passwords WHERE email = %s", (email,))
-    domain_names = mycursor.fetchall()
-    domain_names = [x[0] for x in domain_names]
-    domain_name_dropdown.config(values=domain_names)
-    
-def get_user_ids(domain_name):
-    global dname
-    dname = domain_name
-    mycursor.execute(
-        "SELECT user_id FROM passwords WHERE domain = %s", (domain_name,))
-    user_ids = mycursor.fetchall()
-    user_ids = [x[0] for x in user_ids]
-    user_id_dropdown.config(values=user_ids)
-
-def get_userid(userid):
-   global user_id
-   user_id=userid
+    def printmessage(x, color):
+        print(x)
+        inv = Label(root, text=x, font=font.Font(size=15), bg=c, fg=color)
+        inv.place(relx=0.5, rely=0.9, anchor=CENTER)
 
 
+    def getpassword():
+        sock.send("retrieve".encode())
+        key = masterpass[0:8]
+        s = encryption.encryption("abcdefgh".encode().hex(),key.encode().hex())
+        val = sock.recv(1024).decode()
+        val = decryption.decryption(val)
+        val = bytes.fromhex(val).decode('utf-8')
+        printmessage(val, 'red')
 
-if __name__ == '__main__':
+
+    # define function to retrieve user ids based on selected domain name
+
+    # def get_domains(email):
+    #     mycursor.execute(
+    #         "SELECT domain FROM passwords WHERE email = %s", (email,))
+    #     domain_names = mycursor.fetchall()
+    #     domain_names = [x[0] for x in domain_names]
+    #     print(type(domain_names[0]))
+    #     domain_name_dropdown.config(values=domain_names)
+
+
+    def get_user_ids(domain_name):
+        global dname
+        dname = domain_name
+        sock.send(domain_name.encode())
+        user_ids = list()
+        n = struct.unpack('i', sock.recv(struct.calcsize('i')))[0]
+        sock.send("x".encode())
+        for i in range(n):
+            val = sock.recv(1024).decode()
+            user_ids.append(val)
+            sock.send("x".encode())
+        user_id_dropdown.config(values=user_ids)
+
+
+    def get_userid(userid):
+        global user_id
+        user_id = userid
+        sock.send(userid.encode())
+
+    def destroy(master1):
+        sock.send("Go Back".encode())
+        master1.destroy()
+
+    domain_names = list()
+    n = struct.unpack('i', sock.recv(struct.calcsize('i')))[0]
+    sock.send("x".encode())
+    for i in range(n):
+        val = sock.recv(1024).decode()
+        domain_names.append(val)
+        sock.send("x".encode())
+
     global root
-    root = Tk()
+    root = Toplevel()
     root.geometry("600x450")
     root.config(bg=c)
     root.title("Secure password manage toolkit")
@@ -95,6 +120,7 @@ if __name__ == '__main__':
     domain_name_dropdown = ttk.Combobox(
         root, textvariable=domain_name_var, values=domain_names, state="readonly", width=40, font=myFont2)
     domain_name_dropdown.place(relx=0.5, rely=0.35, anchor=CENTER)
+    domain_name_dropdown.config(values=domain_names) #line was added here based on intuition
 
     domain_name_var.trace_add("write", lambda name, index, mode,
                               domain_name_var=domain_name_var: get_user_ids(domain_name_var.get()))
@@ -112,5 +138,8 @@ if __name__ == '__main__':
     retrieve_button = Button(root, text="Retrieve Password",
                              font=myFont2, padx=30, bg=c2, fg='black', command=getpassword)
     retrieve_button.place(relx=0.5, rely=0.72, anchor=CENTER)
+
+    b2 = Button(root, text="Back", font=myFont2, padx=30, bg=c3, command=lambda: destroy(root))
+    b2.place(relx=0.5, rely=0.70, anchor=CENTER)
 
     root.mainloop()
