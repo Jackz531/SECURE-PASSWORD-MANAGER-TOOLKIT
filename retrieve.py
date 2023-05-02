@@ -50,7 +50,7 @@ def getpassword():
 
 def get_domains(email):
     mycursor.execute(
-        "SELECT domain FROM passwords WHERE email = %s", (email,))
+        "SELECT distinct domain FROM passwords WHERE email = %s", (email,))
     domain_names = mycursor.fetchall()
     domain_names = [x[0] for x in domain_names]
     domain_name_dropdown.config(values=domain_names)
