@@ -5,28 +5,30 @@ import hashlib
 import encryption
 import decryption
 
+
 def find_email(email):
     conn = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="DBMS_project9",
-    database="spmt")
+        host="localhost",
+        user="root",
+        password="",
+        database="spmt")
     cursor = conn.cursor()
-    query="SELECT * FROM master WHERE email = %s"
-    value=(email,)
-    cursor.execute(query,value)
-    rows=cursor.fetchall()
+    query = "SELECT * FROM master WHERE email = %s"
+    value = (email,)
+    cursor.execute(query, value)
+    rows = cursor.fetchall()
     conn.close()
-    if len(rows)==0:
+    if len(rows) == 0:
         return True
     else:
         return False
+
 
 def retrieve_n(email):
     conn = mysql.connector.connect(
         host="localhost",
         user="root",
-        password="DBMS_project9",
+        password="",
         database="spmt")
     cursor = conn.cursor()
     query = "Select* from master where email=%s"
@@ -42,7 +44,7 @@ def checksql(email, pwd):
     conn = mysql.connector.connect(
         host="localhost",
         user="root",
-        password="DBMS_project9",
+        password="",
         database="spmt")
 
     cursor = conn.cursor()
@@ -62,10 +64,10 @@ def checksql(email, pwd):
             cursor = conn.cursor()
             n = n - 1
             query = "Update master set n = %s where email = %s"
-            cursor.execute(query, (n,email))
+            cursor.execute(query, (n, email))
             conn.commit()
             query = "Update master set hash = %s where email = %s"
-            cursor.execute(query, (pwd,email))
+            cursor.execute(query, (pwd, email))
             conn.commit()
             conn.close()
             return "Login Successful"
@@ -81,7 +83,7 @@ def insert(email, pwd):
     conn = mysql.connector.connect(
         host="localhost",
         user="root",
-        password="DBMS_project9",
+        password="",
         database="spmt")
 
     cursor = conn.cursor()
@@ -91,11 +93,12 @@ def insert(email, pwd):
     cursor.execute(query, value)
     conn.commit()
 
-def change_key(password,email,sock):
+
+def change_key(password, email, sock):
     conn = mysql.connector.connect(
         host="localhost",
         user="root",
-        password="DBMS_project9",
+        password="",
         database="spmt")
     cursor = conn.cursor()
     # query="SELECT * FROM passwords inner join master where master.email=%s and master.email=passwords.email"
@@ -113,65 +116,68 @@ def change_key(password,email,sock):
     for i in rows:
         sock.send(i[3].encode())
         encpwd = sock.recv(1024).decode()
-        print(i[3],encpwd)
-        query2="update passwords set pwd = %s where email=%s and domain=%s and user_id=%s"
-        values=(encpwd,email,i[2],i[1])
-        cursor.execute(query2,values)
+        print(i[3], encpwd)
+        query2 = "update passwords set pwd = %s where email=%s and domain=%s and user_id=%s"
+        values = (encpwd, email, i[2], i[1])
+        cursor.execute(query2, values)
 
     query = "Update master set hash = %s, n = 3 where email=%s"
-    cursor.execute(query,(password,email))
+    cursor.execute(query, (password, email))
     conn.commit()
 
-def generate(master_email,sock):
+
+def generate(master_email, sock):
     conn = mysql.connector.connect(
         host="localhost",
         user="root",
-        password="DBMS_project9",
+        password="",
         database="spmt")
     domainname = sock.recv(1024).decode()
     sock.send("x".encode())
     userid = sock.recv(1024).decode()
     sock.send("x".encode())
     encpwd = sock.recv(1024).decode()
-    print(domainname,userid,encpwd)
+    print(domainname, userid, encpwd)
     cursor = conn.cursor()
 
-    q="insert into passwords values (%s,%s,%s,%s)"
-    value=(master_email,userid,domainname,encpwd)
+    q = "insert into passwords values (%s,%s,%s,%s)"
+    value = (master_email, userid, domainname, encpwd)
     cursor.execute(q, value)
     conn.commit()
 
-def get_domains(email,sock):
+
+def get_domains(email, sock):
     mydb = mysql.connector.connect(
         host="localhost",
         user="root",
-        password="DBMS_project9",
+        password="",
         database="spmt")
 
     # create cursor to execute SQL queries
     mycursor = mydb.cursor()
     mycursor.execute(
-        "SELECT domain FROM passwords WHERE email = %s", (email,))
+        "SELECT distinct domain FROM passwords WHERE email = %s", (email,))
     domain_names = mycursor.fetchall()
     domain_names = [x[0] for x in domain_names]
     n = len(domain_names)
-    sock.send(struct.pack('i',n))
+    sock.send(struct.pack('i', n))
     x = sock.recv(1024).decode()
     for i in range(n):
         sock.send(domain_names[i].encode())
         x = sock.recv(1024).decode()
 
-def get_user_ids(domain_name,sock,email):
+
+def get_user_ids(domain_name, sock, email):
     mydb = mysql.connector.connect(
         host="localhost",
         user="root",
-        password="DBMS_project9",
+        password="",
         database="spmt")
 
     # create cursor to execute SQL queries
     mycursor = mydb.cursor()
     mycursor.execute(
-        "SELECT user_id FROM passwords WHERE domain = %s and email=%s", (domain_name,email))
+        "SELECT user_id FROM passwords WHERE domain = %s and email=%s", (domain_name, email))
     user_ids = mycursor.fetchall()
     user_ids = [x[0] for x in user_ids]
     n = len(user_ids)
@@ -181,11 +187,12 @@ def get_user_ids(domain_name,sock,email):
         sock.send(user_ids[i].encode())
         x = sock.recv(1024).decode()
 
-def getpassword(dname,user_id,sock):
+
+def getpassword(dname, user_id, sock):
     conn = mysql.connector.connect(
         host="localhost",
         user="root",
-        password="DBMS_project9",
+        password="",
         database="spmt")
 
     cursor = conn.cursor()
@@ -195,7 +202,9 @@ def getpassword(dname,user_id,sock):
     rows = cursor.fetchall()
     sock.send(rows[0][3].encode())
 
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # instantiate
+
+server_socket = socket.socket(
+    socket.AF_INET, socket.SOCK_STREAM)  # instantiate
 server_socket.bind(('localhost', 5000))  # connect to the server
 
 server_socket.listen(1)
@@ -222,14 +231,14 @@ while True:
             conn.send(n.encode())
             break
         pwd = conn.recv(1024).decode()
-        login_status = checksql(email,pwd)
+        login_status = checksql(email, pwd)
         conn.send(login_status.encode())
         if login_status == "Login Successful":
             n = retrieve_n(email)
-            conn.send(struct.pack('i',n))
+            conn.send(struct.pack('i', n))
             if n == 1:
                 newpass = conn.recv(1024).decode()
-                change_key(newpass,email,conn)
+                change_key(newpass, email, conn)
             while True:
                 genret = ""
                 genret = conn.recv(1024).decode()
@@ -239,7 +248,7 @@ while True:
                     gen = conn.recv(1024).decode()
                     print("gen="+gen)
                     if gen == "generate":
-                        generate(email,conn)
+                        generate(email, conn)
                     elif gen == "Go Back":
                         break
                 if genret == "retrieve":
@@ -249,7 +258,7 @@ while True:
                         print("domain name="+domain_name)
                         if domain_name == "Go Back":
                             break
-                        get_user_ids(domain_name, conn,email)
+                        get_user_ids(domain_name, conn, email)
                         user_id = conn.recv(1024).decode()
                         print("user id=" + user_id)
                         if user_id == "Go Back":
@@ -258,7 +267,7 @@ while True:
                         ret = conn.recv(1024).decode()
                         print("ret="+ret)
                         if ret == "retrieve":
-                            getpassword(domain_name,user_id,conn)
+                            getpassword(domain_name, user_id, conn)
                         elif ret == "Go Back":
                             break
                 if genret == "Go Back":
@@ -273,15 +282,14 @@ while True:
         if signupbuttonclicked == "signup":
             email = conn.recv(1024).decode()
             print(email)
-            conn.send(struct.pack('?',find_email(email)))
+            conn.send(struct.pack('?', find_email(email)))
             validity = conn.recv(1024).decode()
             print(validity)
             if validity == "Signup successful":
                 email = conn.recv(1024).decode()
                 pwd = conn.recv(1024).decode()
-                insert(email,pwd)
+                insert(email, pwd)
             else:
                 pass
         if signupbuttonclicked == "Go Back":
             break
-
