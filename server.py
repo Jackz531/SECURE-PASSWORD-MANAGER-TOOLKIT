@@ -161,7 +161,7 @@ def get_domains(email,sock):
         sock.send(domain_names[i].encode())
         x = sock.recv(1024).decode()
 
-def get_user_ids(domain_name,sock):
+def get_user_ids(domain_name,sock,email):
     mydb = mysql.connector.connect(
         host="localhost",
         user="root",
@@ -171,7 +171,7 @@ def get_user_ids(domain_name,sock):
     # create cursor to execute SQL queries
     mycursor = mydb.cursor()
     mycursor.execute(
-        "SELECT user_id FROM passwords WHERE domain = %s", (domain_name,))
+        "SELECT user_id FROM passwords WHERE domain = %s and email=%s", (domain_name,email))
     user_ids = mycursor.fetchall()
     user_ids = [x[0] for x in user_ids]
     n = len(user_ids)
@@ -249,7 +249,7 @@ while True:
                         print("domain name="+domain_name)
                         if domain_name == "Go Back":
                             break
-                        get_user_ids(domain_name, conn)
+                        get_user_ids(domain_name, conn,email)
                         user_id = conn.recv(1024).decode()
                         print("user id=" + user_id)
                         if user_id == "Go Back":
