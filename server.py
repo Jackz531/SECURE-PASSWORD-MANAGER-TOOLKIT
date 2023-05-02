@@ -207,7 +207,11 @@ while True:
     homebuttonclicked = ""
     homebuttonclicked = conn.recv(1024).decode()
     # print(homebuttonclicked)
+    flag = 0
     while homebuttonclicked == "login":
+        if flag == 1:
+            flag = 0
+            break
         email = conn.recv(1024).decode()
         n = retrieve_n(email)
         if n != "Email Doesn't Exist":
@@ -238,25 +242,27 @@ while True:
                         generate(email,conn)
                     elif gen == "Go Back":
                         break
-                while genret == "retrieve":
+                if genret == "retrieve":
                     get_domains(email, conn)
-                    domain_name = conn.recv(1024).decode()
-                    print("domain name="+domain_name)
-                    if domain_name == "Go Back":
-                        break
-                    get_user_ids(domain_name, conn)
-                    user_id = conn.recv(1024).decode()
-                    print("user id=" + user_id)
-                    if user_id == "Go Back":
-                        break
-                    ret = ""
-                    ret = conn.recv(1024).decode()
-                    print("ret="+ret)
-                    if ret == "retrieve":
-                        getpassword(domain_name,user_id,conn)
-                    elif ret == "Go Back":
-                        break
+                    while True:
+                        domain_name = conn.recv(1024).decode()
+                        print("domain name="+domain_name)
+                        if domain_name == "Go Back":
+                            break
+                        get_user_ids(domain_name, conn)
+                        user_id = conn.recv(1024).decode()
+                        print("user id=" + user_id)
+                        if user_id == "Go Back":
+                            break
+                        ret = ""
+                        ret = conn.recv(1024).decode()
+                        print("ret="+ret)
+                        if ret == "retrieve":
+                            getpassword(domain_name,user_id,conn)
+                        elif ret == "Go Back":
+                            break
                 if genret == "Go Back":
+                    flag = 1
                     break
         else:
             break

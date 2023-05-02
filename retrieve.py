@@ -88,13 +88,15 @@ def home(sock,masterpass):
         sock.send("Go Back".encode())
         master1.destroy()
 
-    domain_names = list()
-    n = struct.unpack('i', sock.recv(struct.calcsize('i')))[0]
-    sock.send("x".encode())
-    for i in range(n):
-        val = sock.recv(1024).decode()
-        domain_names.append(val)
+    def get_domain():
+        domain_names = list()
+        n = struct.unpack('i', sock.recv(struct.calcsize('i')))[0]
         sock.send("x".encode())
+        for i in range(n):
+            val = sock.recv(1024).decode()
+            domain_names.append(val)
+            sock.send("x".encode())
+        return domain_names
 
     global root
     root = Toplevel()
@@ -116,7 +118,7 @@ def home(sock,masterpass):
     domain_name_label.place(relx=0.5, rely=0.27, anchor=CENTER)
 
     domain_name_var = StringVar()
-
+    domain_names = get_domain()
     domain_name_dropdown = ttk.Combobox(
         root, textvariable=domain_name_var, values=domain_names, state="readonly", width=40, font=myFont2)
     domain_name_dropdown.place(relx=0.5, rely=0.35, anchor=CENTER)
